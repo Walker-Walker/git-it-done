@@ -2,6 +2,25 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
+var languageButtonsEl = document.querySelector("#language-buttons");
+
+getFeaturedRepos = function (language) {
+  var apiUrl =
+    "https://api.github.com/search/repositories?q=" +
+    language +
+    "+is:featured&sort=help-wanted-issues";
+  
+    fetch(apiUrl).then(function (response) {
+    if (response.ok) {
+     response.json().then(function(data){
+       displayRepos(data.items, language);
+     });
+    } else {
+      alert("Error: " + response.statusText);
+    }
+  });
+};
+
 var formSubmitHandler = function (event) {
   event.preventDefault();
   console.log(event);
@@ -21,20 +40,20 @@ var getUserRepos = function (user) {
 
   // make a request to the url
   fetch(apiUrl)
-  .then(function(response) {
-    // request was successful
-    if (response.ok) {
-      response.json().then(function(data) {
-        displayRepos(data, user);
-      });
-    } else {
-      alert("Error: " + response.statusText);
-    }
-  })
-  .catch(function(error) {
-    // Notice this `.catch()` getting chained onto the end of the `.then()` method
-    alert("Unable to connect to GitHub");
-  });
+    .then(function (response) {
+      // request was successful
+      if (response.ok) {
+        response.json().then(function (data) {
+          displayRepos(data, user);
+        });
+      } else {
+        alert("Error: " + response.statusText);
+      }
+    })
+    .catch(function (error) {
+      // Notice this `.catch()` getting chained onto the end of the `.then()` method
+      alert("Unable to connect to GitHub");
+    });
 };
 // data became repos and user became searchterm
 var displayRepos = function (repos, searchTerm) {
@@ -73,18 +92,32 @@ var displayRepos = function (repos, searchTerm) {
     // check if current repo has issues or not
     if (repos[i].open_issues_count > 0) {
       statusEl.innerHTML =
-        "<i class='fas fa-times status-icon icon-danger'></i>" + repos[i].open_issues_count + " issue(s)";
+        "<i class='fas fa-times status-icon icon-danger'></i>" +
+        repos[i].open_issues_count +
+        " issue(s)";
     } else {
-      statusEl.innerHTML = "<i class='fas fa-check-square status-icon icon-success'></i>";
+      statusEl.innerHTML =
+        "<i class='fas fa-check-square status-icon icon-success'></i>";
     }
 
     // append to container
     repoEl.appendChild(statusEl);
-
-
 
     // append container to the dom
     repoContainerEl.appendChild(repoEl);
   }
 };
 userFormEl.addEventListener("submit", formSubmitHandler);
+
+var buttonClickHandler = function (event){
+  var language = event.target.getAttribute("data-language");
+ if (language) {
+   getFeaturedRepos(language);
+   
+   //clear old content
+   repoContainerEl.textContent = "";
+ }
+
+
+}
+languageButtonsEl.addEventListener("click" , buttonClickHandler);
